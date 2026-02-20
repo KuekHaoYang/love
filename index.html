@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>给你的一封信 💌</title>
+    <style>
+        /* ==========================================
+           1. Apple Design Variables
+           ========================================== */
+        :root {
+            --material-thick-dark: rgba(30, 30, 30, 0.55);
+            --radius-fluid: clamp(20px, 4vw, 36px);
+            --padding-fluid: clamp(24px, 5vw, 64px);
+            --spring: cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 更轻量级的弹性曲线，兼容性极高 */
+        }
+
+        /* ==========================================
+           2. Global & Hardware Accelerated Setup
+           ========================================== */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            -webkit-font-smoothing: antialiased;
+            /* 阻止移动端多余的默认手势 */
+            touch-action: none; 
+        }
+
+        /* 极度丝滑的光晕背景：利用 GPU 硬件加速的 transform 代替 filter */
+        .bg-container {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-blob {
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200vw; height: 200vh;
+            /* 使用软边缘渐变模拟模糊，性能极高 */
+            background: radial-gradient(circle at 50% 50%, rgba(88,86,214,0.4) 0%, rgba(255,45,85,0.4) 30%, rgba(255,149,0,0.2) 60%, transparent 80%);
+            animation: spin 15s linear infinite;
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) translate3d(0,0,0); }
+            100% { transform: rotate(360deg) translate3d(0,0,0); }
+        }
+
+        /* 隐藏的警报背景（恶搞反转时出现） */
+        .red-alert {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #FF3B30;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: opacity 0.1s ease;
+        }
+        .red-alert.active {
+            opacity: 1;
+            animation: pulseRed 0.3s infinite alternate;
+        }
+        @keyframes pulseRed {
+            from { opacity: 0.7; }
+            to { opacity: 1; }
+        }
+
+        /* ==========================================
+           3. Liquid Glass Card (RWD)
+           ========================================== */
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            width: 90vw;
+            max-width: 600px;
+            min-height: clamp(350px, 50vh, 500px);
+            aspect-ratio: 4/5;
+            
+            border-radius: var(--radius-fluid);
+            background: var(--material-thick-dark);
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            box-shadow: 
+                inset 0 0 0 1px rgba(255, 255, 255, 0.15), 
+                0 20px 40px rgba(0, 0, 0, 0.4);
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--padding-fluid);
+            text-align: center;
+            
+            /* 硬件加速初始状态 */
+            transform: translate3d(0, 20px, 0) scale(0.95);
+            opacity: 0;
+            animation: cardPopIn 0.8s var(--spring) forwards;
+            will-change: transform, opacity;
+        }
+
+        @media (max-aspect-ratio: 3/4) {
+            .glass-card {
+                aspect-ratio: auto;
+                height: 65vh;
+            }
+        }
+
+        @keyframes cardPopIn {
+            to { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+        }
+
+        /* ==========================================
+           4. Elements & Typography
+           ========================================== */
+        /* 核心修复：文字不可阻挡鼠标事件 */
+        .text-display {
+            font-size: clamp(20px, 4vw, 32px);
+            font-weight: 500;
+            letter-spacing: 0.015em;
+            line-height: 1.5;
+            
+            opacity: 0;
+            transform: translate3d(0, 15px, 0);
+            transition: opacity 0.8s ease, transform 0.8s var(--spring);
+            position: absolute;
+            width: 85%;
+            
+            /* 【核心修复点】让文字穿透，不阻挡下方按钮的点击 */
+            pointer-events: none; 
+            will-change: transform, opacity;
+        }
+
+        .text-display.active {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+
+        /* 按钮在最上层 */
+        .apple-button {
+            position: relative;
+            z-index: 100; /* 确保按钮在文字之上 */
+            pointer-events: auto; /* 确保按钮可点 */
+            
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            border: none;
+            padding: clamp(14px, 2vw, 18px) clamp(24px, 4vw, 40px);
+            font-size: clamp(16px, 2.5vw, 18px);
+            font-weight: 600;
+            border-radius: clamp(12px, 2vw, 16px);
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-height: 44px;
+        }
+
+        .apple-button:active {
+            transform: scale(0.94);
+            background: rgba(220, 220, 220, 0.9);
+        }
+
+        /* ==========================================
+           5. The Prank
+           ========================================== */
+        .punchline-text {
+            font-size: clamp(40px, 12vw, 80px) !important;
+            font-weight: 900 !important;
+            color: #FF3B30;
+            text-shadow: 0px 0px 30px rgba(255, 59, 48, 0.8);
+            letter-spacing: 0.05em;
+            
+            opacity: 0;
+            transform: scale(0.5) translate3d(0, 20px, 0);
+            white-space: nowrap; 
+        }
+
+        .punchline-text.active {
+            opacity: 1;
+            transform: scale(1) translate3d(0, 0, 0);
+            transition: all 0.5s var(--spring) !important;
+            animation: textShake 0.1s infinite;
+        }
+
+        /* 硬件加速的震动效果，非常流畅 */
+        @keyframes textShake {
+            0% { transform: translate3d(3px, 2px, 0) rotate(0deg); }
+            25% { transform: translate3d(-3px, -2px, 0) rotate(-1deg); }
+            50% { transform: translate3d(0px, 4px, 0) rotate(1deg); }
+            75% { transform: translate3d(-2px, 2px, 0) rotate(-2deg); }
+            100% { transform: translate3d(2px, -3px, 0) rotate(1deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 硬件加速的流畅背景 -->
+    <div class="bg-container">
+        <div class="bg-blob"></div>
+    </div>
+    
+    <!-- 反转时的红色警报层 -->
+    <div class="red-alert" id="redAlert"></div>
+
+    <!-- 音乐和音效素材 -->
+    <audio id="bgm" src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Gymnop%C3%A9die_No._1.ogg" loop preload="auto"></audio>
+    <audio id="scratch" src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Record_scratch.ogg" preload="auto"></audio>
+
+    <!-- 卡片区域 -->
+    <div class="glass-card" id="card">
+        <button class="apple-button" id="startBtn">点开有一句话想对你说 💌</button>
+        
+        <div class="text-display" id="line1">有些话，一直藏在心里...</div>
+        <div class="text-display" id="line2">每次看到你，世界都变得很温柔。</div>
+        <div class="text-display" id="line3">今天，我终于鼓起勇气...</div>
+        <div class="text-display" id="line4">我想对你说，其实我真的好...</div>
+        
+        <!-- 最后的反转 -->
+        <div class="text-display punchline-text" id="line5">你是大傻逼！！！🤪</div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const bgm = document.getElementById('bgm');
+        const scratch = document.getElementById('scratch');
+        const redAlert = document.getElementById('redAlert');
+        
+        const line1 = document.getElementById('line1');
+        const line2 = document.getElementById('line2');
+        const line3 = document.getElementById('line3');
+        const line4 = document.getElementById('line4');
+        const line5 = document.getElementById('line5');
+
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        startBtn.addEventListener('click', async () => {
+            // 1. 按钮消失，播放音乐 (解决点击反馈)
+            startBtn.style.opacity = '0';
+            startBtn.style.pointerEvents = 'none'; // 彻底禁用按钮
+            
+            try {
+                bgm.volume = 0.5;
+                await bgm.play();
+            } catch (e) {
+                console.log("浏览器限制了自动播放，但不影响画面逻辑");
+            }
+
+            // 2. 唯美的铺垫
+            await wait(600); 
+            
+            line1.classList.add('active');
+            await wait(3000);
+            line1.classList.remove('active');
+            await wait(800);
+
+            line2.classList.add('active');
+            await wait(3500);
+            line2.classList.remove('active');
+            await wait(800);
+
+            line3.classList.add('active');
+            await wait(3000);
+            line3.classList.remove('active');
+            await wait(800);
+
+            // "其实我真的好..."
+            line4.classList.add('active');
+            await wait(2800); 
+            
+            // 3. 高能反转！
+            bgm.pause();
+            try {
+                scratch.currentTime = 0;
+                scratch.play();
+            } catch (e) {}
+            
+            // 瞬间隐藏情话
+            line4.classList.remove('active');
+            line4.style.display = 'none'; 
+
+            // 激活红色警报（性能极高的纯色层切换）
+            redAlert.classList.add('active');
+
+            // 弹出骂人字眼
+            line5.classList.add('active');
+            
+            // 触发手机震动 (Android)
+            if (navigator.vibrate) {
+                navigator.vibrate([500, 100, 500, 100, 500]);
+            }
+        });
+    </script>
+</body>
+</html>
