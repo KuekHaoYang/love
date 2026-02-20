@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>一份专属的行为评估报告</title>
+    <title>致你 💌</title>
     <style>
         /* ==========================================
-           1. Apple Design Variables & RWD
+           1. Apple Design Variables
            ========================================== */
         :root {
             --material-thick-dark: rgba(30, 30, 30, 0.55);
             --radius-fluid: clamp(20px, 4vw, 36px);
             --padding-fluid: clamp(24px, 5vw, 64px);
-            /* Apple 标准缓动曲线 */
             --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
             --spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         /* ==========================================
-           2. Global Setup & GPU Accelerated Background
+           2. Global Setup & Ambient Background
            ========================================== */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -28,8 +27,9 @@
             display: flex; justify-content: center; align-items: center;
             color: white;
             -webkit-font-smoothing: antialiased;
-            touch-action: none; /* 禁用系统默认滚动缩放，专门用于点击 */
-            user-select: none; /* 防止长按选中文本破功 */
+            touch-action: none;
+            user-select: none;
+            cursor: pointer; /* 全局提示可点击 */
         }
 
         .bg-container {
@@ -40,6 +40,7 @@
         .bg-blob {
             position: absolute; top: -50%; left: -50%;
             width: 200vw; height: 200vh;
+            /* 唯美浪漫的紫粉色调，极具苹果原生高级感 */
             background: radial-gradient(circle at 50% 50%, rgba(88,86,214,0.4) 0%, rgba(255,45,85,0.4) 30%, rgba(255,149,0,0.2) 60%, transparent 80%);
             animation: spin 15s linear infinite;
             transform-origin: center center;
@@ -51,19 +52,8 @@
             100% { transform: rotate(360deg) translate3d(0,0,0); }
         }
 
-        /* 恶搞反转警报背景 */
-        .red-alert {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #FF3B30; opacity: 0; z-index: 1; pointer-events: none;
-            transition: opacity 0.1s ease;
-        }
-        .red-alert.active {
-            opacity: 1; animation: pulseRed 0.3s infinite alternate;
-        }
-        @keyframes pulseRed { from { opacity: 0.7; } to { opacity: 1; } }
-
         /* ==========================================
-           3. Responsive Liquid Glass Card
+           3. Liquid Glass Card
            ========================================== */
         .glass-card {
             position: relative; z-index: 10;
@@ -76,9 +66,10 @@
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15), 0 20px 40px rgba(0, 0, 0, 0.4);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             padding: var(--padding-fluid); text-align: center;
+            
+            /* 入场动画极其轻柔缓慢，烘托深情氛围 */
             transform: translate3d(0, 20px, 0) scale(0.95); opacity: 0;
-            animation: cardPopIn 0.8s var(--spring) forwards;
-            cursor: pointer; /* 提示整张卡片可点击 */
+            animation: cardPopIn 1.5s var(--ease-out-expo) forwards;
         }
         @media (max-aspect-ratio: 3/4) {
             .glass-card { aspect-ratio: auto; height: 65vh; }
@@ -86,9 +77,8 @@
         @keyframes cardPopIn { to { transform: translate3d(0, 0, 0) scale(1); opacity: 1; } }
 
         /* ==========================================
-           4. Interactive Typography & UI Elements
+           4. Interactive Typography
            ========================================== */
-        /* 动态文字容器 */
         #textContainer {
             position: absolute; width: 85%;
             display: flex; justify-content: center; align-items: center;
@@ -100,48 +90,56 @@
             font-weight: 500; letter-spacing: 0.015em; line-height: 1.5;
             position: absolute; width: 100%;
             opacity: 0; transform: translate3d(0, 20px, 0);
-            transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
             will-change: transform, opacity;
         }
 
-        /* 文字进入和退出的状态 */
         .text-line.active { opacity: 1; transform: translate3d(0, 0, 0); }
         .text-line.exit { opacity: 0; transform: translate3d(0, -20px, 0); }
 
-        /* 开始按钮 */
-        .apple-button {
-            position: relative; z-index: 100; pointer-events: auto;
-            background: rgba(255, 255, 255, 0.9); color: #000; border: none;
-            padding: clamp(14px, 2vw, 18px) clamp(24px, 4vw, 40px);
-            font-size: clamp(16px, 2.5vw, 18px); font-weight: 600;
-            border-radius: clamp(12px, 2vw, 16px); cursor: pointer;
-            transition: transform 0.1s ease, opacity 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-height: 44px;
-        }
-        .apple-button:active { transform: scale(0.94); background: rgba(220, 220, 220, 0.9); }
-
-        /* 点击继续提示 (呼吸灯效果) */
+        /* 呼吸灯提示音效：轻触屏幕继续 */
         .tap-hint {
             position: absolute; bottom: 30px;
-            font-size: 13px; color: rgba(255, 255, 255, 0.4);
+            font-size: 13px; color: rgba(255, 255, 255, 0.5);
             letter-spacing: 0.05em; font-weight: 400;
-            opacity: 0; transition: opacity 0.5s ease;
-            animation: pulseHint 2s infinite ease-in-out;
+            opacity: 0; transition: opacity 1s ease;
+            animation: pulseHint 2.5s infinite ease-in-out;
             pointer-events: none;
         }
         .tap-hint.visible { opacity: 1; }
-        @keyframes pulseHint { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.7; } }
+        @keyframes pulseHint { 
+            0%, 100% { transform: translate3d(0,0,0); opacity: 0.3; } 
+            50% { transform: translate3d(0,-3px,0); opacity: 0.8; } 
+        }
+
+        /* 开始时的屏幕遮罩（用于获取音频权限） */
+        #startOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.8); z-index: 999;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 16px; letter-spacing: 2px;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            transition: opacity 1s ease;
+        }
 
         /* ==========================================
-           5. The Punchline (无法反驳的结局)
+           5. The Punchline (警报与恶搞)
            ========================================== */
+        .red-alert {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #FF3B30; opacity: 0; z-index: 1; pointer-events: none;
+            transition: opacity 0.1s ease;
+        }
+        .red-alert.active { opacity: 1; animation: pulseRed 0.3s infinite alternate; }
+        @keyframes pulseRed { from { opacity: 0.7; } to { opacity: 1; } }
+
         .punchline-text {
             font-size: clamp(40px, 12vw, 80px) !important;
             font-weight: 900 !important; color: #FF3B30;
             text-shadow: 0px 0px 30px rgba(255, 59, 48, 0.8);
             letter-spacing: 0.05em;
             opacity: 0; transform: scale(0.5) translate3d(0, 20px, 0);
-            white-space: nowrap; transition: none; /* 由 JS 添加动画类 */
+            white-space: nowrap; transition: none; 
         }
         .punchline-text.boom {
             opacity: 1; transform: scale(1) translate3d(0, 0, 0);
@@ -159,89 +157,93 @@
 </head>
 <body>
 
+    <!-- 必须有这个遮罩层，浏览器才允许自动播放音乐 -->
+    <div id="startOverlay">点击任意处开启这封信...</div>
+
     <div class="bg-container"><div class="bg-blob"></div></div>
     <div class="red-alert" id="redAlert"></div>
 
+    <!-- 背景音乐：极其温柔浪漫的钢琴曲 -->
     <audio id="bgm" src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Gymnop%C3%A9die_No._1.ogg" loop preload="auto"></audio>
+    <!-- 恶搞打断音效 -->
     <audio id="scratch" src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Record_scratch.ogg" preload="auto"></audio>
 
     <div class="glass-card" id="card">
-        <button class="apple-button" id="startBtn">点开查看对你的行为评估</button>
-        
-        <div id="textContainer">
-            <!-- 文字由JS动态注入 -->
-        </div>
-
+        <div id="textContainer"></div>
         <div class="tap-hint" id="tapHint">轻触屏幕继续</div>
     </div>
 
     <script>
-        const card = document.getElementById('card');
-        const startBtn = document.getElementById('startBtn');
+        const startOverlay = document.getElementById('startOverlay');
         const textContainer = document.getElementById('textContainer');
         const tapHint = document.getElementById('tapHint');
         const bgm = document.getElementById('bgm');
         const scratch = document.getElementById('scratch');
         const redAlert = document.getElementById('redAlert');
 
-        // 逻辑极其严密，利用受害者“正在点击”的行为来做铺垫
+        /* 
+           文案设计逻辑：
+           1-4句：极其真诚、暧昧，让他彻底沦陷，以为真的是深情告白。
+           5-6句：突然画风一转，切入客观描述，利用他当下的行为作为论据。
+           7句（Punchline）：得出无法反驳的恶毒结论。
+        */
         const scriptLines = [
-            "我最近一直在暗中观察你...",
-            "发现你身上有一个极其罕见的特质。",
-            "即使面对无聊和未知，你也总是充满耐心。",
-            "比如现在，你正全神贯注地盯着屏幕...",
-            "一次又一次地点击，期待着能看到什么深情的告白...",
-            "这种明知道大概率会被耍，却还是乖乖听话点到底的行为...",
-            "在临床心理学上，我们通常严谨地称之为："
+            "其实，有几句话，一直藏在心里没敢告诉你...",
+            "每次看到你，或者想起你的时候，",
+            "总觉得连周围的空气都变得很温柔。",
+            "我终于鼓起勇气，想在这个特殊的网页里，对你坦白...",
+            "坦白地说，我刚才一直躲在屏幕后面观察你。",
+            "看着你满怀期待地、乖乖地、一次又一次点击屏幕，以为我要变成小丑的样子...",
+            "这就导致我得出了一个严谨的结论："
         ];
-        // 最终的 Punchline
+        
         const punchline = "你是大傻逼！！！🤪";
 
         let currentIndex = -1;
         let isAnimating = false;
-        let hasStarted = false;
+        let isStarted = false;
 
         const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // 核心播放逻辑
+        // 渲染下一句话的逻辑
         async function showNextLine() {
-            if (isAnimating) return; // 防止狂点导致动画错乱
+            if (isAnimating) return;
             isAnimating = true;
 
-            // 如果已经有字，先让旧字飘上去消失
             const currentLine = document.querySelector('.text-line.active');
             if (currentLine) {
                 currentLine.classList.remove('active');
                 currentLine.classList.add('exit');
-                await wait(300); // 等待字飞走
-                currentLine.remove(); // 清理DOM
+                await wait(600); // 等旧字飞出
+                currentLine.remove(); 
             }
 
             currentIndex++;
 
-            // 正常文案阶段
+            // 浪漫铺垫 + 逻辑反转阶段
             if (currentIndex < scriptLines.length) {
                 const newEl = document.createElement('div');
                 newEl.className = 'text-line';
                 newEl.textContent = scriptLines[currentIndex];
                 textContainer.appendChild(newEl);
                 
-                // 强制重排以触发 CSS 动画
                 void newEl.offsetWidth; 
                 newEl.classList.add('active');
                 
-                await wait(500); // 锁定时长，防止连点
+                // 延长锁定时间，强迫他慢慢看，增加沉浸感
+                await wait(800); 
                 isAnimating = false;
             } 
-            // 结局反转阶段！
+            // 最终致命一击阶段
             else if (currentIndex === scriptLines.length) {
-                tapHint.classList.remove('visible'); // 隐藏点击提示
+                tapHint.classList.remove('visible');
 
-                // 音乐停止，播放刮盘声
+                // 音乐戛然而止，刮盘声起
                 bgm.pause();
                 try { scratch.currentTime = 0; scratch.play(); } catch(e){}
 
-                redAlert.classList.add('active'); // 背景变红
+                // 背景瞬间变红警报
+                redAlert.classList.add('active'); 
 
                 const boomEl = document.createElement('div');
                 boomEl.className = 'text-line punchline-text';
@@ -249,37 +251,35 @@
                 textContainer.appendChild(boomEl);
 
                 void boomEl.offsetWidth;
-                boomEl.classList.add('boom'); // 触发炸裂动画
+                boomEl.classList.add('boom'); 
 
-                // 触发手机震动
                 if (navigator.vibrate) {
                     navigator.vibrate([500, 100, 500, 100, 500]);
                 }
                 
-                // 彻底结束，不再响应点击
-                card.style.cursor = 'default';
+                document.body.style.cursor = 'default';
             }
         }
 
-        // 1. 监听首屏按钮点击
-        startBtn.addEventListener('click', async (e) => {
-            e.stopPropagation(); // 阻止冒泡，以免触发卡片的点击事件
-            startBtn.style.opacity = '0';
-            startBtn.style.pointerEvents = 'none';
-            
-            try { bgm.volume = 0.5; await bgm.play(); } catch(e){}
+        // 初始化：点击全屏任意位置，开始播放音乐并显示第一句话
+        document.body.addEventListener('click', async () => {
+            if (!isStarted) {
+                isStarted = true;
+                
+                // 1. 播放音乐
+                try { bgm.volume = 0.5; await bgm.play(); } catch(e){}
+                
+                // 2. 隐藏初始遮罩层
+                startOverlay.style.opacity = '0';
+                setTimeout(() => { startOverlay.style.display = 'none'; }, 1000);
 
-            hasStarted = true;
-            setTimeout(() => {
-                tapHint.classList.add('visible'); // 显示底部小提示
-            }, 1000);
-
-            showNextLine();
-        });
-
-        // 2. 监听卡片（全屏）的点击进行下一步
-        card.addEventListener('click', () => {
-            if (hasStarted && currentIndex < scriptLines.length) {
+                // 3. 稍作停顿，显示第一句话和提示
+                await wait(800);
+                showNextLine();
+                setTimeout(() => { tapHint.classList.add('visible'); }, 2000);
+            } 
+            else if (currentIndex < scriptLines.length) {
+                // 后续的每次点击，切换下一句话
                 showNextLine();
             }
         });
